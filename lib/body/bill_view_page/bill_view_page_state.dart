@@ -3,5 +3,5 @@ import 'package:get/get.dart';
 
 class BillViewPageState {
 
-  var listData = [].obs;
+  RxList<BillModel> listData = <BillModel>[].obs;
 }

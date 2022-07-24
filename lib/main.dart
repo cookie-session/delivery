@@ -9,10 +9,13 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:path/path.dart';
+import 'package:desktop_window/desktop_window.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await DesktopWindow.setMinWindowSize(const Size(1400,800));
+
   sqfliteFfiInit();
 
   var databaseFactory = databaseFactoryFfi;
@@ -34,38 +37,18 @@ void main() async {
           getCount TEXT NOT NULL,
           paymentMethod TEXT NOT NULL,
           status INTEGER NOT NULL,
-          freight INTEGER NOT NULL,
+          freight TEXT NOT NULL,
           createTime INTEGER NOT NULL,
           sn TEXT NOT NULL
         )''');
     db.close();
   }
 
-  // db.close();
-
-  // print('Using sqlite3 ${sqlite3.version}');
-  // final db = sqlite3.openInMemory();
-  // db.execute('''
-  //   CREATE TABLE bill (
-  //     id INTEGER NOT NULL PRIMARY KEY,
-  //     sendUserName TEXT NOT NULL,
-  //     sendUserPhone TEXT NOT NULL,
-  //     getUserName TEXT NOT NULL,
-  //     getUserPhone TEXT NOT NULL,
-  //     getUserAddress TEXT NOT NULL,
-  //     getCount TEXT NOT NULL,
-  //     paymentMethod TEXT NOT NULL,
-  //     status INTEGER NOT NULL,
-  //     freight INTEGER NOT NULL,
-  //     createTime INTEGER NOT NULL,
-  //     sn TEXT NOT NULL
-  //   )
-  // ''');
-  //
-  // db.dispose();
-
   runApp(MyApp());
 }
+
+
+
 
 
 

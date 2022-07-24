@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/bill_model.dart';
+import 'package:delivery_win/util/socket.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -15,6 +16,15 @@ class BillViewPageLogic extends GetxController {
     // TODO: implement onInit
     super.onInit();
     getBillListData();
+
+    WebSocketUtility().initWebSocket(onOpen: () {
+
+    }, onMessage: (data) {
+      print(data);
+    }, onError: (e) {
+      print(e);
+    });
+
   }
 
 
@@ -24,22 +34,106 @@ class BillViewPageLogic extends GetxController {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "delivery_db");
     var db = await databaseFactory.openDatabase(path);
-    var result = await db.query('bill');
+    var result = await db.query('bill', orderBy: "id DESC");
     if(result.isNotEmpty){
       for(int i = 0; i < result.length; i++){
         state.listData.add(BillModel.fromJson(result[i]));
       }
       update();
     }else{
+      BotToast.showText(text: '暂无更多数据');
+    }
+    db.close();
+  }
 
+
+
+  sendPrint(BillModel data) async {
+    ///打印标签
+    if(data.status == 1){
+      ///打印操作
+      printDelivery(data);
+      ///更改数据库状态
+      var databaseFactory = databaseFactoryFfi;
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
+      String path = join(documentsDirectory.path, "delivery_db");
+      var db = await databaseFactory.openDatabase(path);
+      var updateResult = await db.update("bill", {"status" : 2}, where: 'id = ?', whereArgs: [data.id] );
+      if(updateResult == 1){
+        db.close();
+        data.status = 2;
+        update();
+        BotToast.showText(text: '快递单打印中...');
+      }else{
+        BotToast.showText(text: '本条信息更新失败,请核对快递单数量和信息');
+      }
+    }else if(data.status == 2){
+      printDelivery(data);
+      BotToast.showText(text: '快递单补印中...');
+    }else {
+      BotToast.showText(text: '该订单已完成，无法打印快递单');
     }
   }
 
-  getDataBasePath() async {
-    var databaseFactory = databaseFactoryFfi;
 
-    BotToast.showText(text: '${await databaseFactory.getDatabasesPath()}');
-    // var db = await databaseFactory.databaseExists(path) ///数据库是否存在
+  deleteBill(int deleteId) async {
+    var databaseFactory = databaseFactoryFfi;
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, "delivery_db");
+    var db = await databaseFactory.openDatabase(path);
+    var result = await db.delete("bill", where: 'id = ?', whereArgs: [deleteId]);
+    if(result == 1){
+      for(int i = 0; i < state.listData.length; i++){
+        if(state.listData[i].id == deleteId){
+          state.listData.removeAt(i);
+          update();
+          return;
+        }
+      }
+    }else{
+      BotToast.showText(text: '删除失败，请联系管理员');
+    }
   }
 
+
+  ///打印快递单
+  printDelivery(BillModel data){
+    WebSocketUtility().sendMessage(
+        "SIZE 76 mm, 130 mm\r\n" +
+            "CODEPAGE UTF-8\r\n" +
+            "CLS\r\n" +
+            "TEXT 130,50,\"TSS24.BF2\",0,2,2,\"壹点通同城配送\"\r\n" +
+            "TEXT 30,150,\"TSS24.BF2\",0,1,1,\"发货人信息：\"\r\n" +
+            "TEXT 30,200,\"TSS24.BF2\",0,1,1,\"发货人: ${data.sendUserName}\"\r\n" +
+            "TEXT 30,250,\"TSS24.BF2\",0,1,1,\"发货人联系方式: ${data.sendUserPhone}\"\r\n" +
+            "TEXT 30,300,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
+            "TEXT 30,350,\"TSS24.BF2\",0,1,1,\"收货人信息：\"\r\n" +
+            "TEXT 30,400,\"TSS24.BF2\",0,1,1,\"收货人: ${data.getUserName}\"\r\n" +
+            "TEXT 30,450,\"TSS24.BF2\",0,1,1,\"收货人联系方式: ${data.getUserPhone}\"\r\n" +
+            "TEXT 30,500,\"TSS24.BF2\",0,1,1,\"收货地址: \"\r\n" +
+            "TEXT 30,550,\"TSS24.BF2\",0,1,1,\"${data.getUserAddress}\"\r\n" +
+            "TEXT 30,600,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
+            "TEXT 30,650,\"TSS24.BF2\",0,1,1,\"货物信息：\"\r\n" +
+            "TEXT 30,700,\"TSS24.BF2\",0,1,1,\"订单号：${data.sn}\"\r\n" +
+            "TEXT 30,750,\"TSS24.BF2\",0,1,1,\"运费：${data.freight}元\"\r\n" +
+            "TEXT 30,800,\"TSS24.BF2\",0,1,1,\"付款方式：${_payTypeFunc(data.paymentMethod!)}\"\r\n" +
+            "TEXT 30,850,\"TSS24.BF2\",0,1,1,\"货物数量：${data.getCount}件\"\r\n" +
+            "TEXT 30,880,\"TSS24.BF2\",0,1,1,\"------------------------------------------\"\r\n" +
+            "TEXT 30,930,\"TSS24.BF2\",0,1,1,\"同城配送电话：18782635598\"\r\n" +
+            "TEXT 30,970,\"TSS24.BF2\",0,1,1,\"郫都区安靖镇雍渡小区22栋附3-5号\"\r\n" +
+            "PRINT 1,${data.getCount}\r\n" +
+            "SOUND 5,100\r\n" +
+            "OUT \"ABC1231\"\r\n");
+  }
+
+  String _payTypeFunc(String payType){
+    int type = int.parse(payType);
+    if(type == 1){
+      return "定金到付";
+    }else if(type == 2){
+      return "货到付款";
+    }else{
+      return "已收款";
+    }
+  }
 }

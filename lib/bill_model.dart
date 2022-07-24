@@ -13,7 +13,7 @@ class BillModel{
   String? getCount;
   String? paymentMethod;
   int? status;
-  int? freight;
+  String? freight;
   int? createTime;
   String? sn;
 

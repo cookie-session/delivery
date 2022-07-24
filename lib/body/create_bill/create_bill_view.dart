@@ -14,9 +14,6 @@ class CreateBillPage extends StatelessWidget {
         DropdownMenuItem(child: const Text("定金到付"), value: "1",),
         DropdownMenuItem(child: const Text("货到付款"), value: "2",),
         DropdownMenuItem(child: const Text("已收款"), value: "3",),
-        DropdownMenuItem(child: const Text("月结"), value: "4",),
-        DropdownMenuItem(child: const Text("季结"), value: "5",),
-        DropdownMenuItem(child: const Text("年结"), value: "6",),
       ],
       hint: const Text("选择付款方式"),
       // 当没有初始值时显示

@@ -8,6 +8,55 @@ import 'package:get/get.dart';
 import 'bill_view_page_logic.dart';
 
 class BillViewPagePage extends StatelessWidget {
+
+
+  String _payTypeFunc(String payType){
+
+    int type = int.parse(payType);
+    if(type == 1){
+      return "定金到付";
+    }else if(type == 2){
+      return "货到付款";
+    }else{
+      return "已收款";
+    }
+  }
+
+  Color _payTypeColor(String payType){
+
+    int type = int.parse(payType);
+    if(type == 1){
+      return const Color(0xffedb06d);
+    }else if(type == 2){
+      return Colors.redAccent;
+    }else{
+      return Colors.green;
+    }
+  }
+
+
+  String _sendTypeFunc(int type){
+    if(type == 1){
+      return "待配送";
+    }else if(type == 2){
+      return "配送中";
+    }else{
+      return "已签收";
+    }
+  }
+
+  Color _sendTypeColor(int type){
+
+    if(type == 1){
+      return Colors.red;
+    }else if(type == 2){
+      return const Color(0xffedb06d);
+    }else{
+      return Colors.green;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<BillViewPageLogic>();
@@ -133,7 +182,7 @@ class BillViewPagePage extends StatelessWidget {
                               Container(
                                 alignment: Alignment.center,
                                 width: 120.w,
-                                child: Text('YDT165461654651'),
+                                child: Text('${cox.state.listData[index].sn}'),
                               ),
                               Expanded(
                                 child: Row(
@@ -141,37 +190,46 @@ class BillViewPagePage extends StatelessWidget {
                                     Container(
                                         alignment: Alignment.center,
                                         width: 45.w,
-                                        child: Text('张三')
+                                        child: Text('${cox.state.listData[index].sendUserName}')
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 45.w,
-                                        child: Text('李四')
+                                        child: Text('${cox.state.listData[index].getUserName}')
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 130.w,
-                                        child: Text('高新区天府三街一品CG一栋2407', style: TextStyle(overflow: TextOverflow.ellipsis),)
+                                        child: Text('${cox.state.listData[index].getUserAddress}', style: TextStyle(overflow: TextOverflow.ellipsis),)
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 60.w,
-                                        child: Text('2022-07-21')
+                                        child: Text('${cox.state.listData[index].createTime}')
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 20.w,
-                                        child: Text('5件')
+                                        child: Row(
+                                          children: [
+                                            Text('${cox.state.listData[index].getCount}', style: const TextStyle(color: Colors.red),),
+                                            const Text('件')
+                                          ],
+                                        )
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 50.w,
-                                        child: Text('到付')
+                                        child: Text(
+                                            _payTypeFunc(cox.state.listData[index].paymentMethod!),
+                                          style: TextStyle(color: _payTypeColor(cox.state.listData[index].paymentMethod!)),
+                                        )
                                     ),
                                     Container(
                                         alignment: Alignment.center,
                                         width: 30.w,
-                                        child: Text('待配送', style: TextStyle(color: Colors.red),)
+                                        child: Text(_sendTypeFunc(cox.state.listData[index].status!),
+                                          style: TextStyle(color: _sendTypeColor(cox.state.listData[index].status!)),)
                                     ),
                                     Expanded(
                                       child: Container(
@@ -180,15 +238,26 @@ class BillViewPagePage extends StatelessWidget {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
+                                            if(cox.state.listData[index].status == 1)
                                             ElevatedButton(
                                               style: ButtonStyle(
                                                   backgroundColor: MaterialStateProperty.all(Colors.green)
                                               ),
                                               onPressed: (){
-
+                                                cox.sendPrint(cox.state.listData[index]);
                                               },
                                               child: Text('打印'),
                                             ),
+                                            if(cox.state.listData[index].status == 2)
+                                              ElevatedButton(
+                                                style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.orange)
+                                                ),
+                                                onPressed: (){
+                                                  cox.sendPrint(cox.state.listData[index]);
+                                                },
+                                                child: Text('补印'),
+                                              ),
                                             SizedBox(width: 10.w,),
                                             ElevatedButton(
                                               onPressed: (){
@@ -360,6 +429,61 @@ class BillViewPagePage extends StatelessWidget {
                                               ),
                                               onPressed: (){
 
+                                                SmartDialog.show(
+                                                  bindPage: true,
+                                                  tag: "deleteDialog",
+                                                  builder: (_) {
+                                                    return Container(
+                                                        height: 500.h,
+                                                        width: 300.w,
+                                                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.w),
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(20),
+                                                          color: Colors.white,
+                                                        ),
+                                                        alignment: Alignment.center,
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            Text('删除数据后将无法恢复，请谨慎操作!', style: TextStyle(fontSize: 45.sp, fontWeight: FontWeight.bold),),
+                                                            Text('您是否需要删除该条数据!', style: TextStyle(fontSize: 40.sp,color: Colors.red),),
+                                                            Row(
+                                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 80.w,
+                                                                  height: 30.w,
+                                                                  child: ElevatedButton(
+                                                                      style: ButtonStyle(
+                                                                          backgroundColor: MaterialStateProperty.all(Colors.red)
+                                                                      ),
+                                                                      onPressed: (){
+                                                                        cox.deleteBill(cox.state.listData[index].id!);
+                                                                        SmartDialog.dismiss(tag: "deleteDialog");
+                                                                      },
+                                                                      child: Text('删除')
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 80.w,
+                                                                  height: 30.w,
+                                                                  child: ElevatedButton(
+                                                                      onPressed: (){
+
+                                                                      },
+                                                                      child: Text('取消')
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        )
+                                                    );
+                                                  },
+                                                );
+
+                                                // cox.deleteBill(cox.state.listData[index].id!);
                                               },
                                               child: Text('删除'),
                                             ),
