@@ -49,6 +49,7 @@ class BillViewPageLogic extends GetxController {
 
 
   sendPrint(BillModel data) async {
+
     ///打印标签
     if(data.status == 1){
       ///打印操作
@@ -75,6 +76,11 @@ class BillViewPageLogic extends GetxController {
     }
   }
 
+//验证是否是手机号码
+  mobile(String phoneNumber){
+    RegExp exp = RegExp(r'^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\d{8}$');
+    return exp.hasMatch(phoneNumber);
+  }
 
   deleteBill(int deleteId) async {
     var databaseFactory = databaseFactoryFfi;
@@ -99,8 +105,25 @@ class BillViewPageLogic extends GetxController {
   ///打印快递单
   printDelivery(BillModel data){
 
-    DateTime times = DateTime.fromMillisecondsSinceEpoch(data.createTime!);
-    String time = '${times.year}-${times.month}-${times.day}  ${times.hour}:${times.minute}:${times.second}';
+
+    String sendPhone = "";
+    String getPhone = "";
+    //如果是手机号码----发货人
+    if(mobile(data.sendUserPhone!)){
+      sendPhone = data.sendUserPhone!.replaceFirst(RegExp(r'\d{4}'), '****', 3);
+    }else{
+      sendPhone = data.sendUserPhone!;
+    }
+
+    //如果是手机号码----收货人
+    if(mobile(data.getUserPhone!)){
+      getPhone = data.getUserPhone!.replaceFirst(RegExp(r'\d{4}'), '****', 3);
+    }else{
+      getPhone = data.getUserPhone!;
+    }
+
+    String times = timeStringToTime(data.createTime!);
+
     WebSocketUtility().sendMessage(
         "SIZE 76 mm, 130 mm\r\n" +
             "CODEPAGE UTF-8\r\n" +
@@ -108,26 +131,33 @@ class BillViewPageLogic extends GetxController {
             "TEXT 130,50,\"TSS24.BF2\",0,2,2,\"壹点通同城配送\"\r\n" +
             "TEXT 30,150,\"TSS24.BF2\",0,1,1,\"发货人信息：\"\r\n" +
             "TEXT 30,190,\"TSS24.BF2\",0,1,1,\"发货人: ${data.sendUserName}\"\r\n" +
-            "TEXT 30,240,\"TSS24.BF2\",0,1,1,\"发货人联系方式: ${data.sendUserPhone}\"\r\n" +
+            "TEXT 30,240,\"TSS24.BF2\",0,1,1,\"发货人联系方式: $sendPhone\"\r\n" +
             "TEXT 30,290,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
             "TEXT 30,340,\"TSS24.BF2\",0,1,1,\"收货人信息：\"\r\n" +
             "TEXT 30,390,\"TSS24.BF2\",0,1,1,\"收货人: ${data.getUserName}\"\r\n" +
-            "TEXT 30,440,\"TSS24.BF2\",0,1,1,\"收货人联系方式: ${data.getUserPhone}\"\r\n" +
+            "TEXT 30,440,\"TSS24.BF2\",0,1,1,\"收货人联系方式: $getPhone\"\r\n" +
             "TEXT 30,490,\"TSS24.BF2\",0,1,1,\"收货地址: \"\r\n" +
             "TEXT 30,540,\"TSS24.BF2\",0,1,1,\"${data.getUserAddress}\"\r\n" +
             "TEXT 30,590,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
             "TEXT 30,640,\"TSS24.BF2\",0,1,1,\"货物信息：\"\r\n" +
             "TEXT 30,690,\"TSS24.BF2\",0,1,1,\"订单号：${data.sn}\"\r\n" +
-            "TEXT 30,740,\"TSS24.BF2\",0,1,1,\"运费：${data.freight}元\"\r\n" +
-            "TEXT 30,790,\"TSS24.BF2\",0,1,1,\"付款方式：${_payTypeFunc(data.paymentMethod!)}\"\r\n" +
-            "TEXT 30,840,\"TSS24.BF2\",0,1,1,\"货物数量：${data.getCount}件\"\r\n" +
-            "TEXT 30,870,\"TSS24.BF2\",0,1,1,\"订单日期：$time件\"\r\n" +
+            "TEXT 30,740,\"TSS24.BF2\",0,1,1,\"订单日期：$times\"\r\n" +
+            "TEXT 30,790,\"TSS24.BF2\",0,1,1,\"运费：${data.freight}元\"\r\n" +
+            "TEXT 30,840,\"TSS24.BF2\",0,1,1,\"付款方式：${_payTypeFunc(data.paymentMethod!)}\"\r\n" +
+            "TEXT 30,870,\"TSS24.BF2\",0,1,1,\"货物数量：${data.getCount}件\"\r\n" +
             "TEXT 30,920,\"TSS24.BF2\",0,1,1,\"------------------------------------------\"\r\n" +
             "TEXT 30,960,\"TSS24.BF2\",0,1,1,\"同城配送电话：18782635598\"\r\n" +
             "TEXT 30,990,\"TSS24.BF2\",0,1,1,\"郫都区安靖镇雍渡小区22栋附3-5号\"\r\n" +
             "PRINT 1,${data.getCount}\r\n" +
             "SOUND 5,100\r\n" +
             "OUT \"ABC1231\"\r\n");
+  }
+
+  //时间戳转时间
+  timeStringToTime(int createTime){
+    DateTime times = DateTime.fromMillisecondsSinceEpoch(createTime);
+    return '${times.year}-${times.month.toString().padLeft(2, "0")}-${times.day.toString().padLeft(2, "0")}  ${times.hour.toString().padLeft(2, "0")}'
+        ':${times.minute.toString().padLeft(2, "0")}:${times.second.toString().padLeft(2, "0")}';
   }
 
   String _payTypeFunc(String payType){

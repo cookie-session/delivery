@@ -280,14 +280,31 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('订单号：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('YDT16516161')
+                                                                Text('${cox.state.listData[index].sn}')
                                                               ],
                                                             ),
                                                             Row(
                                                               children: [
                                                                 Text('发货人名字：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('张三'),
+                                                                Text('${cox.state.listData[index].sendUserName}'),
+                                                                SizedBox(width: 10.w,),
+                                                                SizedBox(
+                                                                  height: 35.h,
+                                                                  child: ElevatedButton(
+                                                                      onPressed: (){
+
+                                                                      },
+                                                                      child: Text('改')
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text('发货人联系方式：'),
+                                                                SizedBox(width: 10.w,),
+                                                                Text('${cox.state.listData[index].sendUserPhone}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -304,7 +321,24 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('收货人名字：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('里斯'),
+                                                                Text('${cox.state.listData[index].getUserName}'),
+                                                                SizedBox(width: 10.w,),
+                                                                SizedBox(
+                                                                  height: 35.h,
+                                                                  child: ElevatedButton(
+                                                                      onPressed: (){
+
+                                                                      },
+                                                                      child: Text('改')
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text('收货人联系方式：'),
+                                                                SizedBox(width: 10.w,),
+                                                                Text('${cox.state.listData[index].getUserPhone}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -321,7 +355,7 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('收货地址：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('武侯区天府三街一品CG1栋2601'),
+                                                                Text('${cox.state.listData[index].getUserAddress}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -338,7 +372,7 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('数量：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('10'),
+                                                                Text('${cox.state.listData[index].getCount}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -355,7 +389,7 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('运费：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('￥10.00'),
+                                                                Text('￥${cox.state.listData[index].freight}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -372,7 +406,7 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('付款方式：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('已付款'),
+                                                                Text('${_payTypeFunc(cox.state.listData[index].paymentMethod!)}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -389,7 +423,7 @@ class BillViewPagePage extends StatelessWidget {
                                                               children: [
                                                                 Text('状态：'),
                                                                 SizedBox(width: 10.w,),
-                                                                Text('待配送'),
+                                                                Text('${_sendTypeFunc(cox.state.listData[index].status!)}'),
                                                                 SizedBox(width: 10.w,),
                                                                 SizedBox(
                                                                   height: 35.h,
@@ -470,7 +504,7 @@ class BillViewPagePage extends StatelessWidget {
                                                                   height: 30.w,
                                                                   child: ElevatedButton(
                                                                       onPressed: (){
-
+                                                                        SmartDialog.dismiss(tag: "deleteDialog");
                                                                       },
                                                                       child: Text('取消')
                                                                   ),
