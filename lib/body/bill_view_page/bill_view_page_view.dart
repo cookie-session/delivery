@@ -1,5 +1,7 @@
 import 'package:barcode_widget/barcode_widget.dart';
+import 'package:delivery_win/bill_model.dart';
 import 'package:delivery_win/routes/app_routes.dart';
+import 'package:delivery_win/util/timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -57,10 +59,297 @@ class BillViewPagePage extends StatelessWidget {
   }
 
 
+  _selectBillInfo(BillViewPageLogic cox, int index){
+    SmartDialog.show(
+      bindPage: true,
+      builder: (_) {
+        return StatefulBuilder(builder: (context, state){
+          return Container(
+              height: 800.h,
+              width: 300.w,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.w),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+              ),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      const Text('订单号：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].sn}')
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('发货人名字：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].sendUserName}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改发货人名称', cox.state.listData[index], '输入需修改发货人名字', 'sendUserName', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('发货人联系方式：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].sendUserPhone}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改发货人联系方式', cox.state.listData[index],'输入需修改发货人联系方式', 'sendUserPhone', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('收货人名字：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].getUserName}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改收货人名字', cox.state.listData[index],'输入需修改收货人名字', 'getUserName', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('收货人联系方式：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].getUserPhone}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改收货人联系方式', cox.state.listData[index],'输入需修改收货人联系方式', 'getUserPhone', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('收货地址：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].getUserAddress}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改收货地址', cox.state.listData[index],'输入需修改收货地址', 'getUserAddress', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('数量：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].getCount}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改货物数量', cox.state.listData[index],'输入需修改货物数量', 'getCount', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('运费：'),
+                      SizedBox(width: 10.w,),
+                      Text('￥${cox.state.listData[index].freight}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改运费', cox.state.listData[index],'输入需修改运费', 'freight', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('付款方式：'),
+                      SizedBox(width: 10.w,),
+                      Text(_payTypeFunc(cox.state.listData[index].paymentMethod!)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('状态：'),
+                      SizedBox(width: 10.w,),
+                      Text(_sendTypeFunc(cox.state.listData[index].status!)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text('录入时间：'),
+                      SizedBox(width: 10.w,),
+                      Text(TimerUtil.timeStringToTime(cox.state.listData[index].createTime!))
+                    ],
+                  ),
+                  BarcodeWidget(
+                    height: 200.h,
+                    barcode: Barcode.code128(),
+                    data: '${cox.state.listData[index].sn}',
+                  )
+                ],
+              )
+          );
+        });
+      },
+    );
+  }
+
+  _edit(BillViewPageLogic cox,String editTitle, BillModel data, String find, String dbFind, Function success){
+    SmartDialog.show(
+      bindPage: true,
+      tag: 'editDialog',
+      builder: (_) {
+        return Container(
+            height: 400.h,
+            width: 250.w,
+            padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 20.w, top: 10.w),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+            ),
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(editTitle, style: TextStyle(fontSize: 40.sp, fontWeight: FontWeight.bold),),
+                Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(5.w)
+                  ),
+                  child: TextField(
+                    controller: cox.state.editingController,
+                    decoration: InputDecoration(
+                        hintText: find,
+                        hintStyle: TextStyle(fontSize: 25.sp),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 5.w),
+                        border: InputBorder.none
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SizedBox(
+                      width: 60.w,
+                      height: 20.w,
+                      child: ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(Colors.red)
+                          ),
+                          onPressed: (){
+                            cox.updateBill(data, dbFind, success);
+                            SmartDialog.dismiss(tag: "editDialog");
+                          },
+                          child: const Text('修改')
+                      ),
+                    ),
+                    SizedBox(
+                      width: 60.w,
+                      height: 20.w,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            SmartDialog.dismiss(tag: "editDialog");
+                          },
+                          child: const Text('取消')
+                      ),
+                    ),
+                  ],
+                )
+
+              ],
+            )
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<BillViewPageLogic>();
-    final state = Get.find<BillViewPageLogic>().state;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -70,31 +359,13 @@ class BillViewPagePage extends StatelessWidget {
         title: Text('壹点通快递订单', style: TextStyle(letterSpacing: 10.w),),
         centerTitle: true,
         actions: [
-          // Container(
-          //   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.w),
-          //   child: ElevatedButton(
-          //       onPressed: (){
-          //         logic.getBillListData();
-          //       },
-          //       child: Text('查看')
-          //   ),
-          // ),
-          // Container(
-          //   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.w),
-          //   child: ElevatedButton(
-          //       onPressed: (){
-          //         logic.getDataBasePath();
-          //       },
-          //       child: Text('数据库位置')
-          //   ),
-          // ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.w),
             child: ElevatedButton(
                 onPressed: (){
                   Get.toNamed(AppRoutes.createBill);
                 },
-                child: Text('录入')
+                child: const Text('录入')
             ),
           ),
         ],
@@ -110,7 +381,7 @@ class BillViewPagePage extends StatelessWidget {
                 Container(
                   alignment: Alignment.center,
                   width: 120.w,
-                  child: Text('订单号'),
+                  child: const Text('订单号'),
                 ),
                 Expanded(
                   child: Row(
@@ -119,43 +390,43 @@ class BillViewPagePage extends StatelessWidget {
                       Container(
                           alignment: Alignment.center,
                           width: 45.w,
-                          child: Text('发货人')
+                          child: const Text('发货人')
                       ),
                       Container(
                           alignment: Alignment.center,
                           width: 45.w,
-                          child: Text('收货人')
+                          child: const Text('收货人')
                       ),
                       Container(
                           alignment: Alignment.center,
                           width: 130.w,
-                          child: Text('收货地址')
+                          child: const Text('收货地址')
                       ),
                       Container(
                           alignment: Alignment.center,
-                          width: 60.w,
-                          child: Text('录入时间')
+                          width: 100.w,
+                          child: const Text('录入时间')
                       ),
                       Container(
                           alignment: Alignment.center,
                           width: 20.w,
-                          child: Text('数量')
+                          child: const Text('数量')
                       ),
                       Container(
                           alignment: Alignment.center,
                           width: 50.w,
-                          child: Text('付款方式')
+                          child: const Text('付款方式')
                       ),
                       Container(
                           alignment: Alignment.center,
                           width: 30.w,
-                          child: Text('状态')
+                          child: const Text('状态')
                       ),
                       Expanded(
                         child: Container(
                             alignment: Alignment.center,
                             // width: 120.w,
-                            child: Text('操作')
+                            child: const Text('操作')
                         ),
                       ),
                     ],
@@ -200,16 +471,16 @@ class BillViewPagePage extends StatelessWidget {
                                     Container(
                                         alignment: Alignment.center,
                                         width: 130.w,
-                                        child: Text('${cox.state.listData[index].getUserAddress}', style: TextStyle(overflow: TextOverflow.ellipsis),)
+                                        child: Text('${cox.state.listData[index].getUserAddress}', style: const TextStyle(overflow: TextOverflow.ellipsis),)
                                     ),
                                     Container(
                                         alignment: Alignment.center,
-                                        width: 60.w,
-                                        child: Text('${cox.state.listData[index].createTime}')
+                                        width: 100.w,
+                                        child: Text('${TimerUtil.timeStringToTime(cox.state.listData[index].createTime!)}')
                                     ),
                                     Container(
                                         alignment: Alignment.center,
-                                        width: 20.w,
+                                        width: 30.w,
                                         child: Row(
                                           children: [
                                             Text('${cox.state.listData[index].getCount}', style: const TextStyle(color: Colors.red),),
@@ -221,7 +492,7 @@ class BillViewPagePage extends StatelessWidget {
                                         alignment: Alignment.center,
                                         width: 50.w,
                                         child: Text(
-                                            _payTypeFunc(cox.state.listData[index].paymentMethod!),
+                                          _payTypeFunc(cox.state.listData[index].paymentMethod!),
                                           style: TextStyle(color: _payTypeColor(cox.state.listData[index].paymentMethod!)),
                                         )
                                     ),
@@ -239,15 +510,15 @@ class BillViewPagePage extends StatelessWidget {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             if(cox.state.listData[index].status == 1)
-                                            ElevatedButton(
-                                              style: ButtonStyle(
-                                                  backgroundColor: MaterialStateProperty.all(Colors.green)
+                                              ElevatedButton(
+                                                style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.green)
+                                                ),
+                                                onPressed: (){
+                                                  cox.sendPrint(cox.state.listData[index]);
+                                                },
+                                                child: const Text('打印'),
                                               ),
-                                              onPressed: (){
-                                                cox.sendPrint(cox.state.listData[index]);
-                                              },
-                                              child: Text('打印'),
-                                            ),
                                             if(cox.state.listData[index].status == 2)
                                               ElevatedButton(
                                                 style: ButtonStyle(
@@ -256,205 +527,14 @@ class BillViewPagePage extends StatelessWidget {
                                                 onPressed: (){
                                                   cox.sendPrint(cox.state.listData[index]);
                                                 },
-                                                child: Text('补印'),
+                                                child: const Text('补印'),
                                               ),
                                             SizedBox(width: 10.w,),
                                             ElevatedButton(
                                               onPressed: (){
-                                                SmartDialog.show(
-                                                  bindPage: true,
-                                                  builder: (_) {
-                                                    return Container(
-                                                        height: 800.h,
-                                                        width: 300.w,
-                                                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.w),
-                                                        decoration: BoxDecoration(
-                                                          borderRadius: BorderRadius.circular(20),
-                                                          color: Colors.white,
-                                                        ),
-                                                        alignment: Alignment.center,
-                                                        child: Column(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                Text('订单号：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].sn}')
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('发货人名字：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].sendUserName}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('发货人联系方式：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].sendUserPhone}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('收货人名字：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].getUserName}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('收货人联系方式：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].getUserPhone}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('收货地址：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].getUserAddress}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('数量：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${cox.state.listData[index].getCount}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('运费：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('￥${cox.state.listData[index].freight}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('付款方式：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${_payTypeFunc(cox.state.listData[index].paymentMethod!)}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('状态：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('${_sendTypeFunc(cox.state.listData[index].status!)}'),
-                                                                SizedBox(width: 10.w,),
-                                                                SizedBox(
-                                                                  height: 35.h,
-                                                                  child: ElevatedButton(
-                                                                      onPressed: (){
-
-                                                                      },
-                                                                      child: Text('改')
-                                                                  ),
-                                                                )
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text('录入时间：'),
-                                                                SizedBox(width: 10.w,),
-                                                                Text('2022-07-21 20:00')
-                                                              ],
-                                                            ),
-                                                            BarcodeWidget(
-                                                              height: 200.h,
-                                                              barcode: Barcode.code128(),
-                                                              data: 'YDT16516161',
-                                                            )
-                                                          ],
-                                                        )
-                                                    );
-                                                  },
-                                                );
+                                                _selectBillInfo(logic, index);
                                               },
-                                              child: Text('查看'),
+                                              child: const Text('查看'),
                                             ),
                                             SizedBox(width: 10.w,),
                                             ElevatedButton(
@@ -496,7 +576,7 @@ class BillViewPagePage extends StatelessWidget {
                                                                         cox.deleteBill(cox.state.listData[index].id!);
                                                                         SmartDialog.dismiss(tag: "deleteDialog");
                                                                       },
-                                                                      child: Text('删除')
+                                                                      child: const Text('删除')
                                                                   ),
                                                                 ),
                                                                 SizedBox(
@@ -506,7 +586,7 @@ class BillViewPagePage extends StatelessWidget {
                                                                       onPressed: (){
                                                                         SmartDialog.dismiss(tag: "deleteDialog");
                                                                       },
-                                                                      child: Text('取消')
+                                                                      child: const Text('取消')
                                                                   ),
                                                                 ),
                                                               ],
@@ -519,7 +599,7 @@ class BillViewPagePage extends StatelessWidget {
 
                                                 // cox.deleteBill(cox.state.listData[index].id!);
                                               },
-                                              child: Text('删除'),
+                                              child: const Text('删除'),
                                             ),
 
                                           ],

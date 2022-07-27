@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/bill_model.dart';
 import 'package:delivery_win/util/socket.dart';
+import 'package:delivery_win/util/timer.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -93,36 +94,20 @@ class BillViewPageLogic extends GetxController {
         if(state.listData[i].id == deleteId){
           state.listData.removeAt(i);
           update();
-          return;
+          break;
         }
       }
     }else{
       BotToast.showText(text: '删除失败，请联系管理员');
     }
+    db.close();
   }
 
 
   ///打印快递单
   printDelivery(BillModel data){
 
-
-    String sendPhone = "";
-    String getPhone = "";
-    //如果是手机号码----发货人
-    if(mobile(data.sendUserPhone!)){
-      sendPhone = data.sendUserPhone!.replaceFirst(RegExp(r'\d{4}'), '****', 3);
-    }else{
-      sendPhone = data.sendUserPhone!;
-    }
-
-    //如果是手机号码----收货人
-    if(mobile(data.getUserPhone!)){
-      getPhone = data.getUserPhone!.replaceFirst(RegExp(r'\d{4}'), '****', 3);
-    }else{
-      getPhone = data.getUserPhone!;
-    }
-
-    String times = timeStringToTime(data.createTime!);
+    String times = TimerUtil.timeStringToTime(data.createTime!);
 
     WebSocketUtility().sendMessage(
         "SIZE 76 mm, 130 mm\r\n" +
@@ -131,11 +116,11 @@ class BillViewPageLogic extends GetxController {
             "TEXT 130,50,\"TSS24.BF2\",0,2,2,\"壹点通同城配送\"\r\n" +
             "TEXT 30,150,\"TSS24.BF2\",0,1,1,\"发货人信息：\"\r\n" +
             "TEXT 30,190,\"TSS24.BF2\",0,1,1,\"发货人: ${data.sendUserName}\"\r\n" +
-            "TEXT 30,240,\"TSS24.BF2\",0,1,1,\"发货人联系方式: $sendPhone\"\r\n" +
+            "TEXT 30,240,\"TSS24.BF2\",0,1,1,\"发货人联系方式: ${data.sendUserPhone}\"\r\n" +
             "TEXT 30,290,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
             "TEXT 30,340,\"TSS24.BF2\",0,1,1,\"收货人信息：\"\r\n" +
             "TEXT 30,390,\"TSS24.BF2\",0,1,1,\"收货人: ${data.getUserName}\"\r\n" +
-            "TEXT 30,440,\"TSS24.BF2\",0,1,1,\"收货人联系方式: $getPhone\"\r\n" +
+            "TEXT 30,440,\"TSS24.BF2\",0,1,1,\"收货人联系方式: ${data.getUserPhone}\"\r\n" +
             "TEXT 30,490,\"TSS24.BF2\",0,1,1,\"收货地址: \"\r\n" +
             "TEXT 30,540,\"TSS24.BF2\",0,1,1,\"${data.getUserAddress}\"\r\n" +
             "TEXT 30,590,\"TSS24.BF2\",0,1,1,\"-----------------------\"\r\n" +
@@ -153,12 +138,7 @@ class BillViewPageLogic extends GetxController {
             "OUT \"ABC1231\"\r\n");
   }
 
-  //时间戳转时间
-  timeStringToTime(int createTime){
-    DateTime times = DateTime.fromMillisecondsSinceEpoch(createTime);
-    return '${times.year}-${times.month.toString().padLeft(2, "0")}-${times.day.toString().padLeft(2, "0")}  ${times.hour.toString().padLeft(2, "0")}'
-        ':${times.minute.toString().padLeft(2, "0")}:${times.second.toString().padLeft(2, "0")}';
-  }
+
 
   String _payTypeFunc(String payType){
     int type = int.parse(payType);
@@ -169,5 +149,38 @@ class BillViewPageLogic extends GetxController {
     }else{
       return "已收款";
     }
+  }
+
+
+  /*
+  修改订单信息
+   */
+  updateBill(BillModel billModel, String find, Function success) async {
+    var databaseFactory = databaseFactoryFfi;
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, "delivery_db");
+    var db = await databaseFactory.openDatabase(path);
+    var result = await db.update("bill", {find : state.editingController.text},where: 'id = ?', whereArgs: [billModel.id]);
+    if(result == 1){
+      state.editingController.clear();
+      var selectResult = await db.query("bill", where: 'id = ?' , whereArgs: [billModel.id]);
+      if(selectResult.isNotEmpty){
+        for(var i = 0; i < state.listData.length; i++){
+          if(state.listData[i].id == billModel.id){
+            state.listData[i] = BillModel.fromJson(selectResult.first);
+            break;
+          }
+        }
+        update();
+        BotToast.showText(text: '修改成功');
+        success();
+
+      }else{
+        BotToast.showText(text: '修改/更新数据列表失败');
+      }
+    }else{
+      BotToast.showText(text: '修改更新数据库失败');
+    }
+    db.close();
   }
 }
