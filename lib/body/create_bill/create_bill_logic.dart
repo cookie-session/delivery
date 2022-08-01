@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -7,16 +8,19 @@ import 'package:delivery_win/body/bill_view_page/bill_view_page_logic.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'create_bill_state.dart';
 import 'package:path/path.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 class CreateBillLogic extends GetxController {
   final CreateBillState state = CreateBillState();
 
+  Database? db;
 
+  //设置防抖周期为3s
+  Duration durationTime = const Duration(milliseconds: 500);
+  Timer? timer;
 
   selectPaymentMethod(String value){
-    print(value);
     state.dropdownMenu.value = value;
     update();
   }
@@ -24,15 +28,11 @@ class CreateBillLogic extends GetxController {
 
   ///写入表单
   saveBill() async {
-
-
     int now =  DateTime.now().millisecondsSinceEpoch;
 
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
     String sn = getSn();
+
+
     Map<String, dynamic> saveData = {
       'sendUserName': state.sendUserNameController.text,
       'sendUserPhone': state.sendPhoneController.text,
@@ -46,13 +46,65 @@ class CreateBillLogic extends GetxController {
       'createTime': now,
       'sn': sn
     };
+    //保存订单
+    var installResult = await db!.insert('bill', saveData);
 
-    var installResult = await db.insert('bill', saveData);
     if(installResult == 0){
       BotToast.showText(text: '本地数据存储失败,请联系管理员');
     }else{
-      var billLogic = Get.find<BillViewPageLogic>();
 
+      /**
+       * 保存发货人，收货人数据
+       */
+      ///发货人是否存在
+      var sendUserDataSelect = await db!.query('user', where: 'UserName = ?' , whereArgs: [state.sendUserNameController.text]);
+      Map<String, dynamic> userDataSend = {
+        "UserName" : state.sendUserNameController.text,
+        "UserPhone" : state.sendPhoneController.text,
+        "UserAddress" : "0",
+        "createTime" : now,
+      };
+      if(sendUserDataSelect.isNotEmpty){ //存在--更新用户信息
+
+        var updateUserDataResult = await db!.update('user', userDataSend, where: "UserName = ?" , whereArgs: [state.sendUserNameController.text]);
+        if(updateUserDataResult == 0){
+          BotToast.showText(text: '更新用户数据----收货人数据更新失败');
+          print('更新用户数据----收货人数据更新失败');
+        }
+      }else{ //插入用户信息
+        var saveUserDataResult = await db!.insert('user', userDataSend);
+        if(saveUserDataResult == 0){
+          print('新用户插入成功');
+        }
+      }
+
+      ///收货人是否存在
+      var getUserDataSelect = await db!.query('user', where: 'UserName = ?' , whereArgs: [state.getUserNameController.text]);
+
+      Map<String, dynamic> userDataGet = {
+        "UserName" : state.getUserNameController.text,
+        "UserPhone" : state.getPhoneController.text,
+        "UserAddress" : state.getAddressController.text,
+        "createTime" : now,
+      };
+
+      if(getUserDataSelect.isNotEmpty){ //存在--更新用户信息
+        var updateUserDataResult = await db!.update('user', userDataGet, where: "UserName = ?" , whereArgs: [state.getUserNameController.text]);
+        if(updateUserDataResult == 0){
+          BotToast.showText(text: '更新用户数据----收货人数据更新失败');
+          print('更新用户数据----收货人数据更新失败');
+        }
+      }else{ //插入用户信息
+        var saveUserDataResult = await db!.insert('user', userDataGet);
+        if(saveUserDataResult == 0){
+          print('新用户插入成功');
+        }
+      }
+
+
+
+      //更新订单列表数据
+      var billLogic = Get.find<BillViewPageLogic>();
       Map<String, dynamic> saveLocalData = {
         'id':installResult,
         'sendUserName': state.sendUserNameController.text,
@@ -80,7 +132,6 @@ class CreateBillLogic extends GetxController {
     }
   }
 
-
   String getSn(){
     String randomStr = Random().nextInt(5).toString();
     for(var i = 0; i < 5; i++){
@@ -93,5 +144,100 @@ class CreateBillLogic extends GetxController {
   }
 
 
+  /**
+   * 获取人员列表
+   */
 
+  fillingData() async {
+    var result = await db!.query('user');
+    if(result.isNotEmpty){
+      state.searchUserListAll = <UserModel>[].obs;
+      state.searchUserList = <UserModel>[].obs;
+      for(int i = 0; i < result.length; i++){
+        state.searchUserListAll.add(UserModel.fromJson(result[i]));
+        state.searchUserList.add(UserModel.fromJson(result[i]));
+      }
+      update();
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    searchListen();
+    state.searchController.clear();
+  }
+
+
+  searchListen() async {
+    var databaseFactory = databaseFactoryFfi;
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, "delivery_db");
+    db = await databaseFactory.openDatabase(path);
+    state.searchController.addListener(() {
+      timer?.cancel();
+      timer = Timer(durationTime, () async {
+        if(state.searchController.text.isNotEmpty){
+          var result = await db!.rawQuery("select * from user where UserName like '%${state.searchController.text}%'");
+          state.searchUserList = <UserModel>[].obs;
+          for(int r = 0; r < result.length; r++){
+            state.searchUserList.add(UserModel.fromJson(result[r]));
+          }
+          update();
+        }else{
+          state.searchUserList = state.searchUserListAll;
+          update();
+        }
+      });
+    });
+  }
+
+
+  /**
+   * 填充数据
+   * type : 1 发货人  2 收货人
+   */
+  fillingAction(UserModel data, int type) {
+    if (type == 1) {
+      state.sendUserNameController.text = data.userName!;
+      state.sendPhoneController.text = data.userPhone!;
+      update();
+    }else {
+      state.getUserNameController.text = data.userName!;
+      state.getPhoneController.text = data.userPhone!;
+      if(data.userAddress == "0"){
+        state.getAddressController.text = '';
+      }else{
+        state.getAddressController.text = data.userAddress!;
+      }
+
+      update();
+    }
+  }
+
+
+  /**
+   * 清除填充
+   */
+  clearFilling(int type){
+    if (type == 1) {
+      state.sendUserNameController.clear();
+      state.sendPhoneController.clear();
+      update();
+    }else {
+      state.getUserNameController.clear();
+      state.getPhoneController.clear();
+      state.getAddressController.clear();
+      update();
+    }
+  }
+
+  @override
+  void onClose() {
+    // TODO: implement onClose
+    super.onClose();
+    state.searchController.dispose();
+    db!.close();
+    timer?.cancel();
+  }
 }

@@ -31,7 +31,31 @@ class BillModel{
     createTime = json['createTime'];
     sn = json['sn'];
   }
+}
 
 
+class UserModel {
+  int? id;
+  String? userName;
+  String? userPhone;
+  String? userAddress;
+  int? createTime;
 
+  UserModel.fromJson(Map<String, dynamic> json){
+    id = json['id'];
+    userName = json['UserName'];
+    userPhone = json['UserPhone'];
+    userAddress = json['UserAddress'];
+    createTime = json['createTime'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data =  <String, dynamic>{};
+    data['id'] = id;
+    data['UserName'] = userName;
+    data['UserPhone'] = userPhone;
+    data['UserAddress'] = userAddress;
+    data['createTime'] = createTime;
+    return data;
+  }
 }

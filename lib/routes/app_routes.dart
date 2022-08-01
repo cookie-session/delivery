@@ -6,6 +6,7 @@ abstract class AppRoutes {
 
   static const billPage = "/billPage";
   static const createBill = "/createBill";
+  static const user = "/User";
 
 
 

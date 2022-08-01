@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/routes/app_pages.dart';
+import 'package:delivery_win/util/shared_preferences.dart';
+import 'package:delivery_win/util/sp_help.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -13,7 +15,7 @@ import 'package:path/path.dart';
 import 'package:desktop_window/desktop_window.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  SpHelp.sp = await SpUtil.getInstance();
   await DesktopWindow.setMinWindowSize(const Size(1400,800));
 
   sqfliteFfiInit();
@@ -40,6 +42,14 @@ void main() async {
           freight TEXT NOT NULL,
           createTime INTEGER NOT NULL,
           sn TEXT NOT NULL
+        )''');
+    await db.execute('''
+        CREATE TABLE user (
+          id INTEGER NOT NULL PRIMARY KEY,
+          UserName TEXT NOT NULL,
+          UserPhone TEXT NOT NULL,
+          UserAddress TEXT,
+          createTime INTEGER NOT NULL
         )''');
     db.close();
   }

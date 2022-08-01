@@ -358,6 +358,12 @@ class BillViewPagePage extends StatelessWidget {
         backgroundColor: Colors.green.shade300,
         title: Text('壹点通快递订单', style: TextStyle(letterSpacing: 10.w),),
         centerTitle: true,
+        leading: IconButton(
+            onPressed: (){
+              Get.toNamed('/User');
+            },
+            icon: Icon(Icons.person_add_alt_outlined)
+        ),
         actions: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.w),

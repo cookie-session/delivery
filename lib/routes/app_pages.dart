@@ -3,6 +3,7 @@
 import 'package:delivery_win/body/bill_view_page/bill_view_page_binding.dart';
 import 'package:delivery_win/body/bill_view_page/bill_view_page_view.dart';
 import 'package:delivery_win/body/create_bill/create_bill_view.dart';
+import 'package:delivery_win/body/user/user_view.dart';
 import 'package:delivery_win/routes/app_routes.dart';
 import 'package:get/get.dart';
 class AppPages {
@@ -21,6 +22,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.createBill,
       page: () => CreateBillPage(),
+    ),
+    GetPage(
+      name: AppRoutes.user,
+      page: () => UserPage(),
     ),
   ];
 }
