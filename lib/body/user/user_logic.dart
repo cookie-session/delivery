@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/bill_model.dart';
+import 'package:delivery_win/util/db/DataDb.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -13,27 +14,18 @@ class UserLogic extends GetxController {
 
 
   getUserList() async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
-
-    var resultUser = await db.query('user', orderBy: "id DESC");
+    var resultUser = await DBService.instance.database!.query('user', orderBy: "id DESC");
+    print(resultUser);
     if(resultUser.isNotEmpty){
       for(int i = 0; i < resultUser.length; i++){
         state.userList.add(UserModel.fromJson(resultUser[i]));
       }
       update();
     }
-    db.close();
   }
 
   deleteUser(int id) async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
-    var result = await db.delete('user',where: 'id = ?', whereArgs: [id]);
+    var result = await DBService.instance.database!.delete('user',where: 'id = ?', whereArgs: [id]);
     if(result == 0){
       BotToast.showText(text: '删除失败');
     }
@@ -45,7 +37,6 @@ class UserLogic extends GetxController {
         continue;
       }
     }
-    db.close();
   }
 
 

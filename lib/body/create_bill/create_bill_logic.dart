@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/bill_model.dart';
 import 'package:delivery_win/body/bill_view_page/bill_view_page_logic.dart';
+import 'package:delivery_win/util/db/DataDb.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -13,8 +14,6 @@ import 'package:path/path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 class CreateBillLogic extends GetxController {
   final CreateBillState state = CreateBillState();
-
-  Database? db;
 
   //设置防抖周期为3s
   Duration durationTime = const Duration(milliseconds: 500);
@@ -47,7 +46,7 @@ class CreateBillLogic extends GetxController {
       'sn': sn
     };
     //保存订单
-    var installResult = await db!.insert('bill', saveData);
+    var installResult = await DBService.instance.database!.insert('bill', saveData);
 
     if(installResult == 0){
       BotToast.showText(text: '本地数据存储失败,请联系管理员');
@@ -57,7 +56,7 @@ class CreateBillLogic extends GetxController {
        * 保存发货人，收货人数据
        */
       ///发货人是否存在
-      var sendUserDataSelect = await db!.query('user', where: 'UserName = ?' , whereArgs: [state.sendUserNameController.text]);
+      var sendUserDataSelect = await DBService.instance.database!.query('user', where: 'UserName = ?' , whereArgs: [state.sendUserNameController.text]);
       Map<String, dynamic> userDataSend = {
         "UserName" : state.sendUserNameController.text,
         "UserPhone" : state.sendPhoneController.text,
@@ -66,20 +65,20 @@ class CreateBillLogic extends GetxController {
       };
       if(sendUserDataSelect.isNotEmpty){ //存在--更新用户信息
 
-        var updateUserDataResult = await db!.update('user', userDataSend, where: "UserName = ?" , whereArgs: [state.sendUserNameController.text]);
+        var updateUserDataResult = await DBService.instance.database!.update('user', userDataSend, where: "UserName = ?" , whereArgs: [state.sendUserNameController.text]);
         if(updateUserDataResult == 0){
           BotToast.showText(text: '更新用户数据----收货人数据更新失败');
           print('更新用户数据----收货人数据更新失败');
         }
       }else{ //插入用户信息
-        var saveUserDataResult = await db!.insert('user', userDataSend);
+        var saveUserDataResult = await DBService.instance.database!.insert('user', userDataSend);
         if(saveUserDataResult == 0){
           print('新用户插入成功');
         }
       }
 
       ///收货人是否存在
-      var getUserDataSelect = await db!.query('user', where: 'UserName = ?' , whereArgs: [state.getUserNameController.text]);
+      var getUserDataSelect = await DBService.instance.database!.query('user', where: 'UserName = ?' , whereArgs: [state.getUserNameController.text]);
 
       Map<String, dynamic> userDataGet = {
         "UserName" : state.getUserNameController.text,
@@ -89,13 +88,13 @@ class CreateBillLogic extends GetxController {
       };
 
       if(getUserDataSelect.isNotEmpty){ //存在--更新用户信息
-        var updateUserDataResult = await db!.update('user', userDataGet, where: "UserName = ?" , whereArgs: [state.getUserNameController.text]);
+        var updateUserDataResult = await DBService.instance.database!.update('user', userDataGet, where: "UserName = ?" , whereArgs: [state.getUserNameController.text]);
         if(updateUserDataResult == 0){
           BotToast.showText(text: '更新用户数据----收货人数据更新失败');
           print('更新用户数据----收货人数据更新失败');
         }
       }else{ //插入用户信息
-        var saveUserDataResult = await db!.insert('user', userDataGet);
+        var saveUserDataResult = await DBService.instance.database!.insert('user', userDataGet);
         if(saveUserDataResult == 0){
           print('新用户插入成功');
         }
@@ -149,7 +148,7 @@ class CreateBillLogic extends GetxController {
    */
 
   fillingData() async {
-    var result = await db!.query('user');
+    var result = await DBService.instance.database!.query('user');
     if(result.isNotEmpty){
       state.searchUserListAll = <UserModel>[].obs;
       state.searchUserList = <UserModel>[].obs;
@@ -170,15 +169,11 @@ class CreateBillLogic extends GetxController {
 
 
   searchListen() async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    db = await databaseFactory.openDatabase(path);
     state.searchController.addListener(() {
       timer?.cancel();
       timer = Timer(durationTime, () async {
         if(state.searchController.text.isNotEmpty){
-          var result = await db!.rawQuery("select * from user where UserName like '%${state.searchController.text}%'");
+          var result = await DBService.instance.database!.rawQuery("select * from user where UserName like '%${state.searchController.text}%'");
           state.searchUserList = <UserModel>[].obs;
           for(int r = 0; r < result.length; r++){
             state.searchUserList.add(UserModel.fromJson(result[r]));
@@ -237,7 +232,6 @@ class CreateBillLogic extends GetxController {
     // TODO: implement onClose
     super.onClose();
     state.searchController.dispose();
-    db!.close();
     timer?.cancel();
   }
 }

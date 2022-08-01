@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:delivery_win/bill_model.dart';
+import 'package:delivery_win/util/db/DataDb.dart';
 import 'package:delivery_win/util/socket.dart';
 import 'package:delivery_win/util/timer.dart';
 import 'package:get/get.dart';
@@ -31,11 +32,7 @@ class BillViewPageLogic extends GetxController {
 
 
   getBillListData() async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
-    var result = await db.query('bill', orderBy: "id DESC");
+    var result = await DBService.instance.database!.query('bill', orderBy: "id DESC");
     if(result.isNotEmpty){
       for(int i = 0; i < result.length; i++){
         state.listData.add(BillModel.fromJson(result[i]));
@@ -44,7 +41,6 @@ class BillViewPageLogic extends GetxController {
     }else{
       BotToast.showText(text: '暂无更多数据');
     }
-    db.close();
   }
 
 
@@ -56,13 +52,8 @@ class BillViewPageLogic extends GetxController {
       ///打印操作
       printDelivery(data);
       ///更改数据库状态
-      var databaseFactory = databaseFactoryFfi;
-      Directory documentsDirectory = await getApplicationDocumentsDirectory();
-      String path = join(documentsDirectory.path, "delivery_db");
-      var db = await databaseFactory.openDatabase(path);
-      var updateResult = await db.update("bill", {"status" : 2}, where: 'id = ?', whereArgs: [data.id] );
+      var updateResult = await DBService.instance.database!.update("bill", {"status" : 2}, where: 'id = ?', whereArgs: [data.id] );
       if(updateResult == 1){
-        db.close();
         data.status = 2;
         update();
         BotToast.showText(text: '快递单打印中...');
@@ -84,11 +75,7 @@ class BillViewPageLogic extends GetxController {
   }
 
   deleteBill(int deleteId) async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
-    var result = await db.delete("bill", where: 'id = ?', whereArgs: [deleteId]);
+    var result = await DBService.instance.database!.delete("bill", where: 'id = ?', whereArgs: [deleteId]);
     if(result == 1){
       for(int i = 0; i < state.listData.length; i++){
         if(state.listData[i].id == deleteId){
@@ -100,7 +87,6 @@ class BillViewPageLogic extends GetxController {
     }else{
       BotToast.showText(text: '删除失败，请联系管理员');
     }
-    db.close();
   }
 
 
@@ -156,14 +142,10 @@ class BillViewPageLogic extends GetxController {
   修改订单信息
    */
   updateBill(BillModel billModel, String find, Function success) async {
-    var databaseFactory = databaseFactoryFfi;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "delivery_db");
-    var db = await databaseFactory.openDatabase(path);
-    var result = await db.update("bill", {find : state.editingController.text},where: 'id = ?', whereArgs: [billModel.id]);
+    var result = await DBService.instance.database!.update("bill", {find : state.editingController.text},where: 'id = ?', whereArgs: [billModel.id]);
     if(result == 1){
       state.editingController.clear();
-      var selectResult = await db.query("bill", where: 'id = ?' , whereArgs: [billModel.id]);
+      var selectResult = await DBService.instance.database!.query("bill", where: 'id = ?' , whereArgs: [billModel.id]);
       if(selectResult.isNotEmpty){
         for(var i = 0; i < state.listData.length; i++){
           if(state.listData[i].id == billModel.id){
@@ -181,6 +163,5 @@ class BillViewPageLogic extends GetxController {
     }else{
       BotToast.showText(text: '修改更新数据库失败');
     }
-    db.close();
   }
 }
