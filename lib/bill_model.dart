@@ -16,6 +16,7 @@ class BillModel{
   String? freight;
   int? createTime;
   String? sn;
+  String? printBillNum;
 
   BillModel.fromJson(Map<String, dynamic> json){
     id = json['id'];
@@ -30,6 +31,7 @@ class BillModel{
     freight = json['freight'];
     createTime = json['createTime'];
     sn = json['sn'];
+    printBillNum = json['printBillNum'];
   }
 }
 

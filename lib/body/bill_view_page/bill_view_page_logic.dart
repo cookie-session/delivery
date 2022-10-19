@@ -33,7 +33,9 @@ class BillViewPageLogic extends GetxController {
 
   getBillListData() async {
     var result = await DBService.instance.database!.query('bill', orderBy: "id DESC");
+
     if(result.isNotEmpty){
+      print(result);
       for(int i = 0; i < result.length; i++){
         state.listData.add(BillModel.fromJson(result[i]));
       }
@@ -119,9 +121,10 @@ class BillViewPageLogic extends GetxController {
             "TEXT 30,920,\"TSS24.BF2\",0,1,1,\"------------------------------------------\"\r\n" +
             "TEXT 30,960,\"TSS24.BF2\",0,1,1,\"同城配送电话：18782635598\"\r\n" +
             "TEXT 30,990,\"TSS24.BF2\",0,1,1,\"郫都区安靖镇雍渡小区22栋附3-5号\"\r\n" +
-            "PRINT 1,${data.getCount}\r\n" +
+            "PRINT 1,${data.printBillNum}\r\n" +
             "SOUND 5,100\r\n" +
-            "OUT \"ABC1231\"\r\n");
+            "OUT \"ABC1231\"\r\n"
+    );
   }
 
 

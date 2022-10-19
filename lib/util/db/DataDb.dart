@@ -26,7 +26,7 @@ class DBService {
       String path = join(documentsDirectory.path, "delivery_db");
       databaseFactory.setDatabasesPath(path);
       database = await databaseFactory.openDatabase(path, options: OpenDatabaseOptions(
-          version: 1,
+          version: 2,
           onCreate: (db , version){
             try {
               Batch batch = db.batch();
@@ -43,7 +43,8 @@ class DBService {
                   status INTEGER NOT NULL,
                   freight TEXT NOT NULL,
                   createTime INTEGER NOT NULL,
-                  sn TEXT NOT NULL
+                  sn TEXT NOT NULL,
+                  printBillNum TEXT(10) DEFAULT 1
                 )''');
               batch.execute('''
                 CREATE TABLE user (
@@ -59,14 +60,15 @@ class DBService {
             }
           },
         onUpgrade: (Database db, int oldVersion, int newVersion){
-            // print('--------------$oldVersion');
-          // try {
-          //   Batch batch = db.batch();
-          //   batch.execute('ALTER TABLE user ADD type');
-          //   batch.commit();
-          // } catch (err) {
-          //   throw (err);
-          // }
+          if(oldVersion  < newVersion){
+            try {
+              Batch batch = db.batch();
+              batch.execute('ALTER TABLE bill ADD printBillNum TEXT(10) DEFAULT 1');
+              batch.commit();
+            } catch (err) {
+              throw (err);
+            }
+          }
         }
       ));
     } catch (err) {

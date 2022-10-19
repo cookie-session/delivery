@@ -265,6 +265,30 @@ class BillViewPagePage extends StatelessWidget {
                       Text(TimerUtil.timeStringToTime(cox.state.listData[index].createTime!))
                     ],
                   ),
+
+                  Row(
+                    children: [
+                      const Text('打印订单数量：'),
+                      SizedBox(width: 10.w,),
+                      Text('${cox.state.listData[index].printBillNum}'),
+                      SizedBox(width: 10.w,),
+                      SizedBox(
+                        height: 35.h,
+                        width: 15.w,
+                        child: ElevatedButton(
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all(EdgeInsets.zero)
+                            ),
+                            onPressed: (){
+                              _edit(cox, '修改打印单数量', cox.state.listData[index],'输入需修改打印数量', 'printBillNum', (){
+                                state(() {});
+                              });
+                            },
+                            child: const Text('改')
+                        ),
+                      )
+                    ],
+                  ),
                   BarcodeWidget(
                     height: 200.h,
                     barcode: Barcode.code128(),
@@ -386,7 +410,7 @@ class BillViewPagePage extends StatelessWidget {
               children: [
                 Container(
                   alignment: Alignment.center,
-                  width: 120.w,
+                  width: 80.w,
                   child: const Text('订单号'),
                 ),
                 Expanded(
@@ -415,7 +439,7 @@ class BillViewPagePage extends StatelessWidget {
                       ),
                       Container(
                           alignment: Alignment.center,
-                          width: 20.w,
+                          width: 30.w,
                           child: const Text('数量')
                       ),
                       Container(
@@ -428,10 +452,14 @@ class BillViewPagePage extends StatelessWidget {
                           width: 30.w,
                           child: const Text('状态')
                       ),
+                      Container(
+                          alignment: Alignment.center,
+                          width: 40.w,
+                          child: const Text('打印数量')
+                      ),
                       Expanded(
                         child: Container(
                             alignment: Alignment.center,
-                            // width: 120.w,
                             child: const Text('操作')
                         ),
                       ),
@@ -458,7 +486,7 @@ class BillViewPagePage extends StatelessWidget {
                             children: [
                               Container(
                                 alignment: Alignment.center,
-                                width: 120.w,
+                                width: 80.w,
                                 child: Text('${cox.state.listData[index].sn}'),
                               ),
                               Expanded(
@@ -507,6 +535,11 @@ class BillViewPagePage extends StatelessWidget {
                                         width: 30.w,
                                         child: Text(_sendTypeFunc(cox.state.listData[index].status!),
                                           style: TextStyle(color: _sendTypeColor(cox.state.listData[index].status!)),)
+                                    ),
+                                    Container(
+                                        alignment: Alignment.center,
+                                        width: 40.w,
+                                        child: Text('${cox.state.listData[index].printBillNum}')
                                     ),
                                     Expanded(
                                       child: Container(

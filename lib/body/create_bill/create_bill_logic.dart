@@ -31,6 +31,7 @@ class CreateBillLogic extends GetxController {
 
     String sn = getSn();
 
+    print('----------${state.printBillNumController.text.isEmpty ? "1" : state.printBillNumController.text}');
 
     Map<String, dynamic> saveData = {
       'sendUserName': state.sendUserNameController.text,
@@ -43,8 +44,12 @@ class CreateBillLogic extends GetxController {
       'status': 1,
       'freight': state.freightController.text,
       'createTime': now,
-      'sn': sn
+      'sn': sn,
+      'printBillNum' : state.printBillNumController.text.isEmpty ? "1" : state.printBillNumController.text
     };
+
+    print(saveData);
+
     //保存订单
     var installResult = await DBService.instance.database!.insert('bill', saveData);
 
@@ -70,7 +75,8 @@ class CreateBillLogic extends GetxController {
           BotToast.showText(text: '更新用户数据----收货人数据更新失败');
           print('更新用户数据----收货人数据更新失败');
         }
-      }else{ //插入用户信息
+      }
+      else{ //插入用户信息
         var saveUserDataResult = await DBService.instance.database!.insert('user', userDataSend);
         if(saveUserDataResult == 0){
           print('新用户插入成功');
@@ -96,7 +102,7 @@ class CreateBillLogic extends GetxController {
       }else{ //插入用户信息
         var saveUserDataResult = await DBService.instance.database!.insert('user', userDataGet);
         if(saveUserDataResult == 0){
-          print('新用户插入成功');
+          BotToast.showText(text: '存储新用户数据成功');
         }
       }
 
@@ -116,7 +122,8 @@ class CreateBillLogic extends GetxController {
         'status': 1,
         'freight': state.freightController.text,
         'createTime': now,
-        'sn': sn
+        'sn': sn,
+        'printBillNum' : state.printBillNumController.text.isEmpty ? "1" : state.printBillNumController.text
       };
       billLogic.state.listData.insert(0, BillModel.fromJson(saveLocalData));
       billLogic.update();

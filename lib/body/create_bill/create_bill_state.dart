@@ -14,6 +14,7 @@ class CreateBillState {
   TextEditingController getAddressController = TextEditingController();
   TextEditingController getCountController = TextEditingController();
   TextEditingController freightController = TextEditingController();
+  TextEditingController printBillNumController = TextEditingController();
 
 
   TextEditingController searchController = TextEditingController();

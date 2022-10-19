@@ -348,6 +348,31 @@ class CreateBillPage extends StatelessWidget {
                         ),
                       ],
                     ),
+                    SizedBox(height: 20.h,),
+                    Row(
+                      children: [
+                        const Text('打印快递单数量：'),
+                        SizedBox(width: 10.w,),
+                        Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(5.w)
+                          ),
+                          height: 90.h,
+                          width: 100.w,
+                          child: TextField(
+                            controller: cox.state.printBillNumController,
+                            decoration: InputDecoration(
+                                hintText: '默认1张',
+                                hintStyle: TextStyle(fontSize: 28.sp),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5.w),
+                                border: InputBorder.none
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                     SizedBox(height: 100.h,),
                     SizedBox(
                       width: 200.w,
